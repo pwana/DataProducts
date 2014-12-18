@@ -31,7 +31,7 @@ TLT (bonds ETF).
 to each portfolio asset. E.g. the default 0.5 value will allocate
 50% to each asset each monthly rebalancing period.
 
-* Ouput:
+## Ouput:
 
 * When using the allocation slider bar, notice the **Allocation Plot**
 and **Results Comparison** tables automatically update to reflect the
