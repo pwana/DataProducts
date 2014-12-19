@@ -1,0 +1,103 @@
+Dynamic Portfolio Rebalance Application
+========================================================
+author: Pat Warner
+date: Dec 18 2014
+
+What does this app do?
+========================================================
+
+* Dynamic Portfolio Rebalancing is a well known asset allocation
+method used in Financial Portfolio Mangement.
+* Rather than put all our risk into one asset, we
+can divide or allocate our portfolio into n assets and
+rebalance monthly. Our App allows 2 assets.
+* Port Total Monthly Return is : 
+$$PortRtn = \alpha*Rtn1 + (1-\alpha)*Rtn2$$
+* $\alpha$ is the allocation amount we allocated to the first asset.
+$1 - \alpha$ is the allocation amount to the second asset.
+Notice the total portfolio allocation will always equal 100%
+* Portolio rebalancing can lower total portfolio risk,
+while maintaining reasonable returns.
+* So, why is our application so important?
+
+
+
+
+
+** Shiny Applicaton located at https://patwarner.shinyapps.io/DataProducts/
+
+Dynamic Visualization
+=========================================================
+
+* We can now adjust a slider bar to allocate between 0 to 100% 
+and automatically see our graphical and tabular Portfolio results
+dynamically!
+* We use the classical allocation strategy between a market 
+equities index (ETF is SPY) and a bond index (ETF is TLT).
+* We can manually adjust the allocation and intuitively see
+results in real time.
+* We can see drawdown curve can be reduced significantly by
+adjusting our allocation level.
+
+Graphical and tabular live updates 
+========================================================
+
+R code output displays comparison 
+of results.
+
+
+```{r, echo=FALSE}
+library(shiny)
+library(quantmod)
+library(PerformanceAnalytics)
+
+input.alloc <- 0.5
+
+
+        data1 <- getSymbols("SPY", 
+                 from = "2000-01-01",
+                 to = as.character(Sys.Date()),
+                 auto.assign = FALSE)
+
+        
+        data2 <- getSymbols("TLT", 
+                 from = "2000-01-01",
+                 to = as.character(Sys.Date()),
+                 auto.assign = FALSE)
+         
+        
+        #output peformance graphs
+        
+        d1 <- Cl(to.monthly(data1)); r1 <- na.omit(Delt(d1))
+        d2 <- Cl(to.monthly(data2)); r2 <- na.omit(Delt(d2))
+
+        PORT <- as.numeric(input.alloc)*r1 + (1-as.numeric(input.alloc))*r2
+
+        fm <<- merge(r1,r2,PORT); names(fm) <- c("SPY","TLT","PORT")
+        
+
+        dd <- apply(na.omit(fm),2,maxDrawdown)
+        cagr <- apply(na.omit(fm),2,Return.annualized,scale=12)
+        return.df <- data.frame(rbind(cagr,dd))
+        return.df <- round(return.df,2)
+        names(return.df) <- c("SPY","TLT","PORT")
+        return.df
+```
+
+***
+
+We can see portfolio results improved optimized annual returns (cagr) and 
+drawdown (dd) over individual asset results.
+
+```{r,echo=FALSE}
+charts.PerformanceSummary(fm)
+```
+ 
+Peformance Summary Table tab
+================================================================================
+```{r,echo=FALSE, width=4, height=4}
+
+kable(t(table.CalendarReturns(fm[,3]))[,7:14])
+
+         
+```
